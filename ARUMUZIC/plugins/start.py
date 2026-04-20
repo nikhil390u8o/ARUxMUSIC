@@ -18,10 +18,12 @@ async def start_cmd(client, msg: Message):
     bot_username = me.username
 
     # ── Dynamic settings ────────────────────────────────────────────────────
-    START_IMG    = S.get(config.BOT_TOKEN, "start_img")
-    support_link = S.get(config.BOT_TOKEN, "support_link")
-    owner_id     = S.get(config.BOT_TOKEN, "owner_id") or config.CLONE_OWNER_ID
-    owner_name   = S.get(config.BOT_TOKEN, "owner_username") or config.CLONE_OWNER_USERNAME or "sxyaru"
+    token = client.bot_token
+
+START_IMG    = S.get(token, "start_img")
+support_link = S.get(token, "support_link")
+owner_id     = S.get(token, "owner_id")
+owner_name   = S.get(token, "owner_username") or "sxyaru"
 
     # ── Animation ───────────────────────────────────────────────────────────
     m = await client.send_message(msg.chat.id, "<code>ʜᴇʏ...</code>")

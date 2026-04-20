@@ -20,10 +20,10 @@ async def start_cmd(client, msg: Message):
     # ── Dynamic settings ────────────────────────────────────────────────────
     token = client.bot_token
 
-START_IMG    = S.get(token, "start_img")
-support_link = S.get(token, "support_link")
-owner_id     = S.get(token, "owner_id")
-owner_name   = S.get(token, "owner_username") or "sxyaru"
+    START_IMG    = S.get(token, "start_img")
+    support_link = S.get(token, "support_link")
+    owner_id     = S.get(token, "owner_id")
+    owner_name   = S.get(token, "owner_username") or "sxyaru"
 
     # ── Animation ───────────────────────────────────────────────────────────
     m = await client.send_message(msg.chat.id, "<code>ʜᴇʏ...</code>")

@@ -5,6 +5,7 @@ from pyrogram import filters, enums
 from pyrogram.types import ChatMemberUpdated, InlineKeyboardMarkup, InlineKeyboardButton
 import config
 import settings as S
+import database as DB
 
 WELCOME_IMAGES = [
     "https://files.catbox.moe/nacfzm.jpg",
@@ -44,6 +45,10 @@ async def welcome_handler(client, update: ChatMemberUpdated):
         name       = user.first_name or "User"
         user_id    = user.id
         chat_title = update.chat.title
+
+        # Track group
+        DB.add_group(config.BOT_TOKEN, update.chat.id)
+        DB.add_user(config.BOT_TOKEN, user_id)
 
         # Group invite — jisne add kiya uska naam bhi aayega
         if update.from_user and update.from_user.id != user_id:
@@ -137,3 +142,4 @@ async def vc_service_handler(client, msg):
 
     except Exception as e:
         print(f"[VC SERVICE ERROR] {e}")
+

@@ -1,14 +1,16 @@
 import asyncio
 import random
+import ARUMUZIC.clients as _clients
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls.types import AudioPiped, HighQualityAudio
-from ARUMUZIC.clients import bot, assistant, call
+from ARUMUZIC.clients import bot
 import config
 import settings as S
 
-# Note: Circular import se bachne ke liye functions ko call ke time import karna better hai
-# par agar yahan work kar raha hai toh rehne do.
+# call ko hamesha module se lo — reload ke baad bhi fresh reference milega
+def get_call():
+    return _clients.call
 
 @Client.on_callback_query()
 async def cb_handler(client: Client, query: CallbackQuery):
@@ -61,14 +63,14 @@ async def cb_handler(client: Client, query: CallbackQuery):
     # --- Basic Music Controls ---
     elif data == "pause_cb":
         try:
-            await call.pause_stream(chat_id)
+            await get_call().pause_stream(chat_id)
             await query.answer("Paused ⏸")
         except:
             await query.answer("Nothing playing!", show_alert=True)
 
     elif data == "resume_cb":
         try:
-            await call.resume_stream(chat_id)
+            await get_call().resume_stream(chat_id)
             await query.answer("Resumed ▶️")
         except:
             await query.answer("Nothing playing!", show_alert=True)
@@ -83,7 +85,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 except: pass
             else:
                 try:
-                    await call.leave_group_call(chat_id)
+                    await get_call().leave_group_call(chat_id)
                     if chat_id in config.queues:
                         config.queues.pop(chat_id)
                     await query.message.delete()
@@ -95,7 +97,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
     elif data == "stop_cb":
         try:
-            await call.leave_group_call(chat_id)
+            await get_call().leave_group_call(chat_id)
             if chat_id in config.queues:
                 config.queues.pop(chat_id)
             await query.message.delete()
@@ -110,7 +112,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 stream_url = song["url"]
                 
                 # Replaying using change_stream for better stability
-                await call.change_stream(
+                await get_call().change_stream(
                     chat_id, 
                     AudioPiped(stream_url, HighQualityAudio())
                 )

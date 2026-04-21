@@ -17,20 +17,18 @@ WELCOME_IMAGES = [
 
 WELCOME_TEXT = """🌸✨ ──────────────────── ✨🌸  
 🎊 <b>ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴏᴜʀ ɢʀᴏᴜᴘ</b> 🎊  
-  
+
 🌹 <b>ɴᴀᴍᴇ</b> ➤ {name}  
 🆔 <b>ᴜsᴇʀ ɪᴅ</b> ➤ <code>{user_id}</code>  
 🏠 <b>ɢʀᴏᴜᴘ</b> ➤ {chat_title}  
-  
+
 💕 <b>ᴡᴇ'ʀᴇ sᴏ ʜᴀᴘᴘʏ ᴛᴏ ʜᴀᴠᴇ ʏᴏᴜ ʜᴇʀᴇ!</b>  
 ✨ <b>ғᴇᴇʟ ғʀᴇᴇ ᴛᴏ sʜᴀʀᴇ ᴀɴᴅ ᴇɴᴊᴏʏ!</b>  
-⚡ <b>ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴇxᴘᴇʀɪᴇɴᴄᴇ ᴡɪᴛʜ ᴛʜɪs ʙᴏᴛ</b>  
-  
 💝 <b>ᴘᴏᴡᴇʀᴇᴅ ʙʏ ➤</b> <a href="https://t.me/sxyaru">˹ᴀʀᴜ × ᴀᴘɪ˼ × [ʙᴏᴛs]</a>  
 🌸✨ ──────────────────── ✨🌸  
 """
 
-# ─── Welcome + Group Invite Detection ────────────────────────────────────────
+# ─── Welcome + Group Invite ───────────────────────────────────────────────────
 
 @bot.on_chat_member_updated(filters.group)
 async def welcome_handler(client, update: ChatMemberUpdated):
@@ -47,7 +45,7 @@ async def welcome_handler(client, update: ChatMemberUpdated):
         user_id    = user.id
         chat_title = update.chat.title
 
-        # Group invite detection (jab koi member ko add kare)
+        # Group invite — jisne add kiya uska naam bhi aayega
         if update.from_user and update.from_user.id != user_id:
             inviter      = update.from_user
             inviter_name = inviter.first_name or "User"
@@ -63,7 +61,7 @@ async def welcome_handler(client, update: ChatMemberUpdated):
             except:
                 pass
 
-        # Welcome message
+        # Welcome photo
         photo        = random.choice(WELCOME_IMAGES)
         caption      = WELCOME_TEXT.format(name=name, user_id=user_id, chat_title=chat_title)
         support_link = S.get(config.BOT_TOKEN, "support_link")
@@ -90,12 +88,12 @@ async def welcome_handler(client, update: ChatMemberUpdated):
         print(f"[WELCOME ERROR] {e}")
 
 
-# ─── VC Invite + Join Detection ───────────────────────────────────────────────
+# ─── VC Invite (service message) ─────────────────────────────────────────────
 
-@bot.on_message(filters.group)
+@bot.on_message(filters.group & filters.service)
 async def vc_service_handler(client, msg):
     try:
-        # VC mein invite kiya kisi ko
+        # VC mein invite
         vc_invite = getattr(msg, "video_chat_participants_invited", None)
         if vc_invite:
             inviter = msg.from_user
@@ -103,6 +101,8 @@ async def vc_service_handler(client, msg):
                 inviter_name = inviter.first_name or "User"
                 users = getattr(vc_invite, "users", []) or []
                 for user in users:
+                    if not user:
+                        continue
                     invited_name = user.first_name or "User"
                     text = (
                         f"<a href='tg://user?id={inviter.id}'>{inviter_name}</a> "

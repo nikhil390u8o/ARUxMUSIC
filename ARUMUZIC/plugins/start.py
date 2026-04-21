@@ -1,13 +1,19 @@
 import asyncio
-from ARUMUZIC.clients import bot, assistant, call
+from ARUMUZIC.clients import bot, assistant
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 import config
 import settings as S
+import database as DB
 
 
 @Client.on_message(filters.command("start"))
 async def start_cmd(client, msg: Message):
+    # Track user
+    DB.add_user(config.BOT_TOKEN, msg.from_user.id)
+    # Track group if started from group
+    if msg.chat.id != msg.from_user.id:
+        DB.add_group(config.BOT_TOKEN, msg.chat.id)
     try:
         await msg.delete()
     except:

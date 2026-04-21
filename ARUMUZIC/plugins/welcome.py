@@ -102,9 +102,13 @@ async def welcome_updated_logic(client, update: ChatMemberUpdated):
         print(f"[WELCOME ERROR] {e}")
 
 
-# ─── VC Invite Notification (Telegram service message) ───────────────────────
+# ─── VC Invite Notification ───────────────────────────────────────────────────
 
-@bot.on_message(filters.group & filters.video_chat_participants_invited)
+vc_invite_filter = filters.create(
+    lambda _, __, m: bool(getattr(m, "video_chat_participants_invited", None))
+)
+
+@bot.on_message(filters.group & vc_invite_filter)
 async def vc_invite_handler(client, msg):
     try:
         inviter = msg.from_user
@@ -136,9 +140,13 @@ async def vc_invite_handler(client, msg):
         print(f"[VC INVITE ERROR] {e}")
 
 
-# ─── VC Join Notification (jab koi khud join kare) ───────────────────────────
+# ─── VC Join Notification ─────────────────────────────────────────────────────
 
-@bot.on_message(filters.group & filters.video_chat_started)
+vc_started_filter = filters.create(
+    lambda _, __, m: bool(getattr(m, "video_chat_started", None))
+)
+
+@bot.on_message(filters.group & vc_started_filter)
 async def vc_started_handler(client, msg):
     try:
         user = msg.from_user
@@ -235,4 +243,5 @@ async def welcome_updated_logic(client, update: ChatMemberUpdated):
 
     except Exception as e:
         print(f"[WELCOME ERROR] {e}")
+
 

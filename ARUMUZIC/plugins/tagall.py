@@ -1,64 +1,60 @@
 import asyncio
-from pyrogram import filters, enums
+from pyrogram import Client, filters, enums
 from pyrogram.types import Message
 from pyrogram.errors import FloodWait, ChatAdminRequired
-from ARUMUZIC.clients import bot
 import config
 
 
-async def _is_admin(client, chat_id: int, user_id: int) -> bool:
+async def _is_admin(client, chat_id, user_id):
     try:
-        member = await client.get_chat_member(chat_id, user_id)
-        return member.status in (
+        m = await client.get_chat_member(chat_id, user_id)
+        return m.status in (
             enums.ChatMemberStatus.OWNER,
             enums.ChatMemberStatus.ADMINISTRATOR
         )
-    except Exception:
+    except:
         return False
 
 
-@bot.on_message(filters.command("tagall") & filters.group)
+@Client.on_message(filters.command("tagall") & filters.group)
 async def tagall(client, msg: Message):
     if not msg.from_user:
         return await msg.reply_text("❌ Anonymous admin use nahi kar sakte.")
 
-    user_id  = msg.from_user.id
+    uid      = msg.from_user.id
     chat_id  = msg.chat.id
-    is_admin = await _is_admin(client, chat_id, user_id)
-    is_owner = (user_id == config.CLONE_OWNER_ID)
+    is_admin = await _is_admin(client, chat_id, uid)
+    is_owner = (uid == config.CLONE_OWNER_ID)
 
     if not (is_admin or is_owner):
         return await msg.reply_text("❌ <b>Sirf group admins /tagall use kar sakte hain!</b>")
 
     parts      = msg.text.split(maxsplit=1)
     custom_msg = parts[1].strip() if len(parts) > 1 else "📢 <b>Everyone!</b>"
-    status_msg = await msg.reply_text("⏳ <b>Members fetch ho rahe hain...</b>")
+    status     = await msg.reply_text("⏳ <b>Members fetch ho rahe hain...</b>")
 
     members = []
     try:
         async for member in client.get_chat_members(chat_id):
-            user = member.user
-            if user and not user.is_bot and not user.is_deleted:
-                members.append(user)
+            u = member.user
+            if u and not u.is_bot and not u.is_deleted:
+                members.append(u)
     except ChatAdminRequired:
-        return await status_msg.edit_text("❌ <b>Bot ko admin banana padega!</b>")
+        return await status.edit_text("❌ <b>Bot ko admin banana padega!</b>")
     except Exception as e:
-        return await status_msg.edit_text(f"❌ <b>Error:</b> <code>{e}</code>")
+        return await status.edit_text(f"❌ <b>Error:</b> <code>{e}</code>")
 
     if not members:
-        return await status_msg.edit_text("❌ <b>Koi member nahi mila!</b>")
+        return await status.edit_text("❌ <b>Koi member nahi mila!</b>")
 
     total = len(members)
-    await status_msg.edit_text(f"📢 <b>Tagging {total} members...</b>")
+    await status.edit_text(f"📢 <b>Tagging {total} members...</b>")
 
-    try:
-        await msg.delete()
-    except:
-        pass
+    try: await msg.delete()
+    except: pass
 
-    CHUNK = 5
-    for i in range(0, total, CHUNK):
-        chunk = members[i:i + CHUNK]
+    for i in range(0, total, 5):
+        chunk = members[i:i+5]
         tags  = " ".join(
             f"<a href='tg://user?id={u.id}'>{u.first_name or 'User'}</a>"
             for u in chunk
@@ -68,12 +64,9 @@ async def tagall(client, msg: Message):
             await client.send_message(chat_id, text, parse_mode=enums.ParseMode.HTML)
         except FloodWait as fw:
             await asyncio.sleep(fw.value + 2)
-            try:
-                await client.send_message(chat_id, text, parse_mode=enums.ParseMode.HTML)
-            except:
-                pass
-        except:
-            pass
+            try: await client.send_message(chat_id, text, parse_mode=enums.ParseMode.HTML)
+            except: pass
+        except: pass
         await asyncio.sleep(1)
 
-    await status_msg.edit_text(f"✅ <b>Done! {total} members tag ho gaye.</b>")
+    await status.edit_text(f"✅ <b>Done! {total} members tag ho gaye.</b>")

@@ -53,7 +53,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         )
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("❓ ʜᴇʟᴘ", callback_data="help_menu"), InlineKeyboardButton("📂 ʀᴇᴘᴏ", callback_data="repo_menu")],
-            [InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url=f"tg://user?id={owner_id}"), InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url=support_link)],
+            [InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url=f"https://t.me/{owner_name}"), InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url=support_link)],
             [InlineKeyboardButton("➕ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f"https://t.me/{bot_me.username}?startgroup=true")]
         ])
         await query.message.edit_caption(caption=text, reply_markup=buttons)
@@ -131,3 +131,4 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
     elif data == "prog_update":
         await query.answer("Updating progress...", show_alert=False)
+

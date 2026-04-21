@@ -1,9 +1,8 @@
 import random
 import asyncio
-from ARUMUZIC.clients import bot, call
+from ARUMUZIC.clients import bot
 from pyrogram import filters, enums
 from pyrogram.types import ChatMemberUpdated, InlineKeyboardMarkup, InlineKeyboardButton
-from pytgcalls.types import Update
 import config
 import settings as S
 
@@ -103,47 +102,61 @@ async def welcome_updated_logic(client, update: ChatMemberUpdated):
         print(f"[WELCOME ERROR] {e}")
 
 
-# ─── VC Join Notification ─────────────────────────────────────────────────────
+# ─── VC Invite Notification (Telegram service message) ───────────────────────
 
-@call.on_participants_change()
-async def vc_join_handler(_, update: Update):
+@bot.on_message(filters.group & filters.video_chat_participants_invited)
+async def vc_invite_handler(client, msg):
     try:
-        # Sirf join events
-        if not hasattr(update, "participants"):
+        inviter = msg.from_user
+        if not inviter:
             return
 
-        for participant in update.participants:
-            if not getattr(participant, "just_joined", False):
-                continue
+        invited_users = msg.video_chat_participants_invited.users
+        if not invited_users:
+            return
 
-            user_id   = participant.user_id
-            chat_id   = update.chat_id
+        inviter_name = inviter.first_name or "User"
 
-            # Bot khud join kare to skip
-            me = await bot.get_me()
-            if user_id == me.id:
-                continue
-
-            try:
-                user = await bot.get_users(user_id)
-                uname = user.first_name or "User"
-            except:
-                uname = f"User {user_id}"
-
-            vc_text = (
-                f"🎙️ <a href='tg://user?id={user_id}'>{uname}</a> "
-                f"<b>ᴠᴄ ᴘᴇ ᴊᴏɪɴ ʜᴏ ɢᴀʏᴀ!</b>"
+        for user in invited_users:
+            invited_name = user.first_name or "User"
+            text = (
+                f"<a href='tg://user?id={inviter.id}'>{inviter_name}</a> "
+                f"ɴᴇ ɪɴᴠɪᴛᴇ ᴋɪʏᴀ: "
+                f"<a href='tg://user?id={user.id}'>{invited_name}</a> "
+                f"ᴠɪᴅᴇᴏ ᴄʜᴀᴛ ᴘᴇ 🎙️"
             )
-
-            msg = await bot.send_message(chat_id, vc_text)
-            await asyncio.sleep(20)
+            notif = await bot.send_message(msg.chat.id, text)
+            await asyncio.sleep(30)
             try:
-                await msg.delete()
+                await notif.delete()
             except:
                 pass
 
     except Exception as e:
-        print(f"[VC JOIN ERROR] {e}")
+        print(f"[VC INVITE ERROR] {e}")
+
+
+# ─── VC Join Notification (jab koi khud join kare) ───────────────────────────
+
+@bot.on_message(filters.group & filters.video_chat_started)
+async def vc_started_handler(client, msg):
+    try:
+        user = msg.from_user
+        if not user or user.is_bot:
+            return
+        uname = user.first_name or "User"
+        text = (
+            f"🎙️ <a href='tg://user?id={user.id}'>{uname}</a> "
+            f"<b>ᴠᴄ ᴘᴇ ᴊᴏɪɴ ʜᴏ ɢᴀʏᴀ!</b>"
+        )
+        notif = await bot.send_message(msg.chat.id, text)
+        await asyncio.sleep(20)
+        try:
+            await notif.delete()
+        except:
+            pass
+    except Exception as e:
+        print(f"[VC START ERROR] {e}")
 
 
 # --- Random Welcome Images ---
@@ -222,3 +235,4 @@ async def welcome_updated_logic(client, update: ChatMemberUpdated):
 
     except Exception as e:
         print(f"[WELCOME ERROR] {e}")
+

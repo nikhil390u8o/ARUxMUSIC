@@ -22,7 +22,10 @@ async def start_bot():
     
     await bot.stop()
     await assistant.stop()
-    await call.stop()
+    try:
+        await call.stop()
+    except AttributeError:
+        pass  # pytgcalls 0.9.7 me stop() nahi hai
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(start_bot())

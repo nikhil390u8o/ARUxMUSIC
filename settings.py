@@ -98,3 +98,59 @@ def get_all_clones() -> list:
         if cfg.get("is_clone"):
             result.append({"token": token, **cfg})
     return result
+
+
+# ═══════════════════════════════════════════════════════
+# DATABASE FUNCTIONS — users/groups track karne ke liye
+# ═══════════════════════════════════════════════════════
+
+DB_KEY = "__db__"
+
+def _db_load() -> dict:
+    data = _load()
+    if DB_KEY not in data:
+        data[DB_KEY] = {}
+    return data
+
+def _db_save(data: dict):
+    _save(data)
+
+def add_user(token: str, user_id: int):
+    data = _db_load()
+    db   = data.setdefault(DB_KEY, {})
+    tok  = db.setdefault(token, {"users": [], "groups": []})
+    if user_id not in tok["users"]:
+        tok["users"].append(user_id)
+        _save(data)
+
+def add_group(token: str, chat_id: int):
+    data = _db_load()
+    db   = data.setdefault(DB_KEY, {})
+    tok  = db.setdefault(token, {"users": [], "groups": []})
+    if chat_id not in tok["groups"]:
+        tok["groups"].append(chat_id)
+        _save(data)
+
+def get_users(token: str) -> list:
+    data = _load()
+    return data.get(DB_KEY, {}).get(token, {}).get("users", [])
+
+def get_groups(token: str) -> list:
+    data = _load()
+    return data.get(DB_KEY, {}).get(token, {}).get("groups", [])
+
+def get_all_users_all_bots() -> list:
+    data  = _load()
+    seen  = set()
+    for td in data.get(DB_KEY, {}).values():
+        for uid in td.get("users", []):
+            seen.add(uid)
+    return list(seen)
+
+def get_all_groups_all_bots() -> list:
+    data = _load()
+    seen = set()
+    for td in data.get(DB_KEY, {}).values():
+        for gid in td.get("groups", []):
+            seen.add(gid)
+    return list(seen)

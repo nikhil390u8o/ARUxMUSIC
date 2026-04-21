@@ -4,10 +4,15 @@ Works in both main bot and cloned bots.
 Only group admins / bot owner can use it.
 """
 
-from pyrogram import filters
+import asyncio
+import ARUMUZIC.clients as _clients
+from pyrogram import filters, enums
 from pyrogram.types import Message
-from ARUMUZIC.clients import bot, call
+from ARUMUZIC.clients import bot
 import config
+
+def get_call():
+    return _clients.call
 
 
 async def _is_admin(client, chat_id: int, user_id: int) -> bool:
@@ -50,7 +55,7 @@ async def skip_cmd(client, msg: Message):
         # Queue mein sirf ek hi song hai — VC leave karo
         m = await msg.reply_text("⏹ <b>Queue empty! Leaving VC...</b>")
         try:
-            await call.leave_group_call(chat_id)
+            await get_call().leave_group_call(chat_id)
             config.queues.pop(chat_id, None)
             config.current_playing.pop(chat_id, None)
             await m.edit_text("⏹ <b>Queue khatam! VC chhod diya.</b>")

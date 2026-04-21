@@ -50,7 +50,7 @@ async def start_cmd(client, msg: Message):
             InlineKeyboardButton("📂 ʀᴇᴘᴏ", callback_data="repo_menu")
         ],
         [
-            InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url=f"tg://user?id={owner_id}"),
+            InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url=f"https://t.me/{owner_name}"),
             InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url=support_link)
         ],
         [
